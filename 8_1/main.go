@@ -42,31 +42,31 @@ func (sequence *encryptedSequenceType) parseNodes(numNodes, start int) (metadata
 	if maxCalls < 0 {
 		log.Fatalf("too deep\n")
 	}
-	curNodeStart := start
+	cursor := start
 	childEnds := 0
 
 	for i := 1; i <= numNodes; i++ {
 		childMetadataSum := 0
-		childNodes := (*sequence)[curNodeStart]
-		curNodeMetadataCount := (*sequence)[curNodeStart+1]
-		curNodeStart += 2
+		childNodes := (*sequence)[cursor]
+		curNodeMetadataCount := (*sequence)[cursor+1]
+		cursor += 2
 		fmt.Printf(". parsing #%d node: %d childs, %d metadata\n", i, childNodes, curNodeMetadataCount)
 		if childNodes != 0 {
-			childMetadataSum, childEnds = sequence.parseNodes(childNodes, curNodeStart)
+			childMetadataSum, childEnds = sequence.parseNodes(childNodes, cursor)
 			fmt.Printf("+ returned next node position %d\n", childEnds)
-			curNodeStart = childEnds + 1
+			cursor = childEnds + 1
 		}
 		fmt.Printf(". parsing #%d node: childEnds %d\n", i, childEnds)
 
 		metadataSum += childMetadataSum
 		fmt.Printf(". metadata:")
 		for j := 0; j < curNodeMetadataCount; j++ {
-			metadataSum += (*sequence)[curNodeStart+j]
-			fmt.Printf("+%d", (*sequence)[curNodeStart+j])
-			ends = curNodeStart + 1 + j
+			metadataSum += (*sequence)[cursor+j]
+			fmt.Printf("+%d", (*sequence)[cursor+j])
+			ends = cursor + 1 + j
 		}
 		fmt.Println("")
-		curNodeStart = ends + 1
+		cursor = ends + 1
 	}
-	return metadataSum, curNodeStart
+	return metadataSum, cursor
 }
