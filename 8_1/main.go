@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	f, err := os.Open("input_task.txt")
+	f, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatalf("can't open file input.txt: %s", err.Error())
 	}
