@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	f, err := os.Open("input.txt")
+	f, err := os.Open("input_task.txt")
 	if err != nil {
 		log.Fatalf("can't open file input.txt: %s", err.Error())
 	}
@@ -28,16 +28,16 @@ func main() {
 		}
 	}
 
-	msum, ends := sample.parseNodes(1, 0)
+	msum, ends := sample.parseNodes(1, 0, 0)
 	fmt.Printf("%d, %d\n", msum, ends)
 }
 
 type encryptedSequenceType []int
 
-var maxCalls = 10
+var maxCalls = 10000
 
-func (sequence *encryptedSequenceType) parseNodes(numNodes, start int) (metadataSum, ends int) {
-	fmt.Printf("parsing %d nodes starting from %d\n", numNodes, start)
+func (sequence *encryptedSequenceType) parseNodes(numNodes, start, level int) (metadataSum, ends int) {
+	fmt.Printf("%sparsing %d nodes starting from %d\n", strings.Repeat("\t", level), numNodes, start)
 	maxCalls--
 	if maxCalls < 0 {
 		log.Fatalf("too deep\n")
@@ -49,24 +49,23 @@ func (sequence *encryptedSequenceType) parseNodes(numNodes, start int) (metadata
 		childMetadataSum := 0
 		childNodes := (*sequence)[cursor]
 		curNodeMetadataCount := (*sequence)[cursor+1]
+		fmt.Printf("%s. parsing #%d node starting from %d: %d childs, %d metadata\n", strings.Repeat("\t", level), i, cursor, childNodes, curNodeMetadataCount)
 		cursor += 2
-		fmt.Printf(". parsing #%d node: %d childs, %d metadata\n", i, childNodes, curNodeMetadataCount)
+
 		if childNodes != 0 {
-			childMetadataSum, childEnds = sequence.parseNodes(childNodes, cursor)
-			fmt.Printf("+ returned next node position %d\n", childEnds)
-			cursor = childEnds + 1
+			childMetadataSum, cursor = sequence.parseNodes(childNodes, cursor, level+1)
+			fmt.Printf("%s+ returned next node position %d\n", strings.Repeat("\t", level), childEnds)
 		}
-		fmt.Printf(". parsing #%d node: childEnds %d\n", i, childEnds)
+		fmt.Printf("%s. parsing #%d node: childEnds %d\n", strings.Repeat("\t", level), i, childEnds)
 
 		metadataSum += childMetadataSum
-		fmt.Printf(". metadata:")
+		fmt.Printf("%s. metadata:", strings.Repeat("\t", level))
 		for j := 0; j < curNodeMetadataCount; j++ {
-			metadataSum += (*sequence)[cursor+j]
-			fmt.Printf("+%d", (*sequence)[cursor+j])
-			ends = cursor + 1 + j
+			metadataSum += (*sequence)[cursor]
+			fmt.Printf("+%d", (*sequence)[cursor])
+			cursor++
 		}
 		fmt.Println("")
-		cursor = ends + 1
 	}
 	return metadataSum, cursor
 }
